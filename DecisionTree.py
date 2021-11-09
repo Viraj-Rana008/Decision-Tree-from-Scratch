@@ -54,6 +54,31 @@ class DecisionTreeClasifier:
         self.root = self.build_tree(X,Y)
     
     def build_tree(self, X, Y, depth=0):
+        num_samples_per_class = [np.sum(Y == i) for i in range(self.num_of_classes)]
+        predicted_class = np.argmax(num_samples_per_class)
+
+        node = Node(
+            gini=self.gini(Y),
+            num_samples=Y.size,
+            num_samples_per_class=num_samples_per_class,
+            predicted_class=predicted_class
+        )
+
+        if depth < self.max_depth:
+            ind, thr = self.best_split(X, Y)
+            if ind is not None:
+                indices_left = X[:, ind] < thr
+
+                X_left, Y_left   = X[indices_left], Y[indices_left]
+                X_right, Y_right = X[~indices_left], Y[~indices_left]
+                
+                
+                node.feature_index = ind
+                node.threshold = thr
+                node.left = self.build_tree(X_left, Y_left, depth+1)
+                node.right = self.build_tree(X_right, Y_right, depth+1)
+        return node
+
 
 class Node:
     def __init__(self, gini, num_samples, num_samples_per_class, predicted_class) -> None:
