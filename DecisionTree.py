@@ -58,7 +58,6 @@ class DecisionTreeClasifier:
         predicted_class = np.argmax(num_samples_per_class)
 
         node = Node(
-            gini=self.gini(Y),
             num_samples=Y.size,
             num_samples_per_class=num_samples_per_class,
             predicted_class=predicted_class
@@ -78,11 +77,23 @@ class DecisionTreeClasifier:
                 node.left = self.build_tree(X_left, Y_left, depth+1)
                 node.right = self.build_tree(X_right, Y_right, depth+1)
         return node
+    
+    def predict(self, X):
+        return [self._predict(inputs) for inputs in X]
+
+    def _predict(self, inputs):
+        node = self.root
+        while node.left:
+            if inputs[node.feature_index] < node.threshold:
+                node = node.left
+            else:
+                node = node.right
+        return node.predicted_class
+
 
 
 class Node:
-    def __init__(self, gini, num_samples, num_samples_per_class, predicted_class) -> None:
-        self.gini = gini
+    def __init__(self, num_samples, num_samples_per_class, predicted_class) -> None:
         self.num_samples = num_samples
         self.num_samples_per_class = num_samples_per_class
         self.predicted_class = predicted_class
